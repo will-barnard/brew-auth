@@ -28,7 +28,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Set<String> PASSWORD_CHANGE_ALLOWED_PATHS = Set.of(
         "/api/auth/change-password",
         "/api/auth/me",
-        "/api/auth/logout"
+        "/api/auth/logout",
+        "/api/auth/profile"
     );
 
     private final JwtService jwtService;

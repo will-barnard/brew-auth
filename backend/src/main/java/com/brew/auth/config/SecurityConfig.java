@@ -32,6 +32,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/.well-known/jwks.json").permitAll()
                 .requestMatchers("/api/health").permitAll()
+                .requestMatchers("/api/settings").permitAll()
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/register").permitAll()
                 .anyRequest().authenticated()

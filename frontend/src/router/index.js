@@ -28,6 +28,17 @@ const routes = [
     path: '/users',
     name: 'users',
     component: () => import('../views/UsersView.vue')
+  },
+  {
+    path: '/settings',
+    name: 'settings',
+    component: () => import('../views/SettingsView.vue'),
+    meta: { superAdminOnly: true }
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    component: () => import('../views/ProfileView.vue')
   }
 ]
 
@@ -51,6 +62,10 @@ router.beforeEach(async (to) => {
 
   if (auth.passwordChangeRequired && to.name !== 'change-password') {
     return { name: 'change-password' }
+  }
+
+  if (to.meta.superAdminOnly && auth.user?.role !== 'super_admin') {
+    return { name: 'dashboard' }
   }
 
   return true

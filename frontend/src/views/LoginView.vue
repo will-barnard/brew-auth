@@ -1,7 +1,7 @@
 <template>
   <div class="auth-page">
     <div class="auth-card">
-      <h1>Brew Auth</h1>
+      <h1>{{ title }}</h1>
       <p class="subtitle">Sign in to your account</p>
       <form @submit.prevent="handleLogin">
         <div class="form-group">
@@ -22,15 +22,24 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import api from '../api'
 
 const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
 
+const title = ref('Brew Auth')
 const email = ref('')
+
+onMounted(async () => {
+  try {
+    const settings = await api.get('/api/settings')
+    if (settings.login_title) title.value = settings.login_title
+  } catch { /* use default */ }
+})
 const password = ref('')
 const error = ref('')
 const loading = ref(false)

@@ -5,6 +5,7 @@ import com.brew.auth.entity.User;
 import com.brew.auth.service.InvitationService;
 import com.brew.auth.service.JwtService;
 import com.brew.auth.service.UserService;
+import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
@@ -99,6 +100,29 @@ public class AuthController {
             String token = jwtService.generateToken(user);
             setCookie(httpResponse, token);
             return ResponseEntity.ok(new AuthResponse(token, UserDto.from(user), false));
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to generate token");
+        }
+    }
+
+    @PutMapping("/profile")
+    @SuppressWarnings("unchecked")
+    public ResponseEntity<AuthResponse> updateProfile(@Valid @RequestBody UpdateProfileRequest request,
+                                                       HttpServletResponse httpResponse,
+                                                       Authentication auth) {
+        Map<String, Object> claims = (Map<String, Object>) auth.getPrincipal();
+        String userId = (String) claims.get("sub");
+
+        User user = userService.findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        user.setUsername(request.username());
+        userService.save(user);
+
+        try {
+            String token = jwtService.generateToken(user);
+            setCookie(httpResponse, token);
+            return ResponseEntity.ok(new AuthResponse(token, UserDto.from(user), user.isPasswordChangeRequired()));
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to generate token");
         }
