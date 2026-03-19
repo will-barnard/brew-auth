@@ -23,10 +23,11 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
 
 const email = ref('')
@@ -42,7 +43,12 @@ async function handleLogin() {
     if (data.passwordChangeRequired) {
       router.push('/change-password')
     } else {
-      router.push('/')
+      const returnUrl = route.query.return_url
+      if (returnUrl && returnUrl.startsWith('https://')) {
+        window.location.href = returnUrl
+      } else {
+        router.push('/')
+      }
     }
   } catch (e) {
     error.value = e.message
