@@ -1,0 +1,53 @@
+<template>
+  <div class="auth-page">
+    <div class="auth-card">
+      <h1>Brew Auth</h1>
+      <p class="subtitle">Sign in to your account</p>
+      <form @submit.prevent="handleLogin">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" v-model="email" type="email" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input id="password" v-model="password" type="password" required autocomplete="current-password" />
+        </div>
+        <p v-if="error" class="error">{{ error }}</p>
+        <button type="submit" :disabled="loading">
+          {{ loading ? 'Signing in...' : 'Sign In' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
+
+const router = useRouter()
+const auth = useAuthStore()
+
+const email = ref('')
+const password = ref('')
+const error = ref('')
+const loading = ref(false)
+
+async function handleLogin() {
+  error.value = ''
+  loading.value = true
+  try {
+    const data = await auth.login(email.value, password.value)
+    if (data.passwordChangeRequired) {
+      router.push('/change-password')
+    } else {
+      router.push('/')
+    }
+  } catch (e) {
+    error.value = e.message
+  } finally {
+    loading.value = false
+  }
+}
+</script>

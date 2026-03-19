@@ -1,0 +1,27 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:brewauth}
+    username: ${DB_USERNAME:brewauth}
+    password: ${DB_PASSWORD:changeme}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+
+auth:
+  cookie-domain: ${AUTH_COOKIE_DOMAIN:.localhost}
+  issuer: ${AUTH_ISSUER:http://localhost:8080}
+  url: ${AUTH_URL:http://localhost:5173}
+  jwt-expiration-hours: ${JWT_EXPIRATION_HOURS:24}
+  super-admin-email: ${SUPER_ADMIN_EMAIL:admin@brew.local}
+  super-admin-password: ${SUPER_ADMIN_PASSWORD:}
+
+resend:
+  api-key: ${RESEND_API_KEY:}
+  from-email: ${RESEND_FROM_EMAIL:noreply@brew.local}
