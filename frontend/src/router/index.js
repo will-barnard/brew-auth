@@ -36,6 +36,18 @@ const routes = [
     meta: { superAdminOnly: true }
   },
   {
+    path: '/workspaces',
+    name: 'workspaces',
+    component: () => import('../views/WorkspacesView.vue'),
+    meta: { superAdminOnly: true }
+  },
+  {
+    path: '/workspaces/:id',
+    name: 'workspace-detail',
+    component: () => import('../views/WorkspaceDetailView.vue'),
+    meta: { superAdminOnly: true }
+  },
+  {
     path: '/profile',
     name: 'profile',
     component: () => import('../views/ProfileView.vue')

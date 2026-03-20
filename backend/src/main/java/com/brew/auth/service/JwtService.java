@@ -2,7 +2,9 @@ package com.brew.auth.service;
 
 import com.brew.auth.entity.CryptoKey;
 import com.brew.auth.entity.User;
+import com.brew.auth.entity.WorkspaceMembership;
 import com.brew.auth.repository.CryptoKeyRepository;
+import com.brew.auth.repository.WorkspaceMembershipRepository;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
@@ -29,6 +31,7 @@ public class JwtService {
     private static final Logger log = LoggerFactory.getLogger(JwtService.class);
 
     private final CryptoKeyRepository cryptoKeyRepository;
+    private final WorkspaceMembershipRepository membershipRepository;
 
     private RSAKey rsaKey;
     private JWSSigner signer;
@@ -40,8 +43,10 @@ public class JwtService {
     @Value("${auth.jwt-expiration-hours}")
     private int expirationHours;
 
-    public JwtService(CryptoKeyRepository cryptoKeyRepository) {
+    public JwtService(CryptoKeyRepository cryptoKeyRepository,
+                      WorkspaceMembershipRepository membershipRepository) {
         this.cryptoKeyRepository = cryptoKeyRepository;
+        this.membershipRepository = membershipRepository;
     }
 
     @PostConstruct
@@ -77,12 +82,23 @@ public class JwtService {
     }
 
     public String generateToken(User user) throws JOSEException {
+        // Build workspace membership list for JWT claims
+        List<WorkspaceMembership> memberships = membershipRepository.findByUserId(user.getId());
+        List<Map<String, String>> workspaceClaims = memberships.stream()
+            .map(m -> Map.of(
+                "id", m.getWorkspace().getId(),
+                "slug", m.getWorkspace().getSlug(),
+                "role", m.getRole()
+            ))
+            .toList();
+
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
             .subject(user.getId())
             .claim("email", user.getEmail())
             .claim("username", user.getUsername())
             .claim("role", user.getRole())
             .claim("password_change_required", user.isPasswordChangeRequired())
+            .claim("workspaces", workspaceClaims)
             .issuer(issuer)
             .issueTime(new Date())
             .expirationTime(Date.from(Instant.now().plus(expirationHours, ChronoUnit.HOURS)))
@@ -122,6 +138,8 @@ public class JwtService {
         result.put("username", claims.getStringClaim("username"));
         result.put("role", claims.getStringClaim("role"));
         result.put("password_change_required", claims.getBooleanClaim("password_change_required"));
+        Object workspaces = claims.getClaim("workspaces");
+        result.put("workspaces", workspaces != null ? workspaces : List.of());
         return result;
     }
 
