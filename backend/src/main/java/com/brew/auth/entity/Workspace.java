@@ -17,7 +17,7 @@ public class Workspace {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String url;
 
     @Column(name = "api_key", nullable = false, unique = true)

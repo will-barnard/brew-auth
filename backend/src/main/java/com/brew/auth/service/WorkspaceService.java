@@ -67,6 +67,7 @@ public class WorkspaceService {
         workspaceRepository.deleteById(id);
     }
 
+    @Transactional
     public List<WorkspaceMemberDto> getMembers(String workspaceId) {
         return membershipRepository.findByWorkspaceId(workspaceId).stream()
             .map(m -> new WorkspaceMemberDto(
